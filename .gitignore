@@ -1,1 +1,7 @@
 target/
+# generated files
+bin/
+gen/
+.settings/
+.classpath
+.project

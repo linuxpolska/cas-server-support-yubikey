@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Licensed to Jasig under one or more contributor license agreements. 
+	See the NOTICE file distributed with this work for additional information 
+	regarding copyright ownership. Jasig licenses this file to you under the 
+	Apache License, Version 2.0 (the "License"); you may not use this file except 
+	in compliance with the License. You may obtain a copy of the License at the 
+	following location: http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
+
+	<aop:aspectj-autoproxy />
+
+	<!-- CentralAuthenticationService -->
+	<bean id="centralAuthenticationService" class="org.jasig.cas.CentralAuthenticationServiceImpl"
+		p:ticketGrantingTicketExpirationPolicy-ref="neverExpiresExpirationPolicy"
+		p:serviceTicketExpirationPolicy-ref="neverExpiresExpirationPolicy"
+		p:authenticationManager-ref="authenticationManager"
+		p:ticketGrantingTicketUniqueTicketIdGenerator-ref="uniqueTicketIdGenerator"
+		p:ticketRegistry-ref="ticketRegistry" p:servicesManager-ref="servicesManager"
+		p:persistentIdGenerator-ref="persistentIdGenerator">
+		<property name="uniqueTicketIdGeneratorsForService">
+			<map>
+				<entry
+					key="org.jasig.cas.authentication.principal.SimpleWebApplicationServiceImpl"
+					value-ref="uniqueTicketIdGenerator" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="servicesManager" class="org.jasig.cas.services.DefaultServicesManagerImpl">
+		<constructor-arg index="0" ref="serviceRegistryDao" />
+	</bean>
+
+	<bean id="serviceRegistryDao" class="org.jasig.cas.services.InMemoryServiceRegistryDaoImpl">
+		<property name="registeredServices">
+			<list>
+				<bean class="org.jasig.cas.services.RegexRegisteredService">
+					<property name="id" value="0" />
+					<property name="name" value="Test Service" />
+					<property name="serviceId" value="test$" />
+					<property name="evaluationOrder" value="1" />
+				</bean>
+
+				<bean class="org.jasig.cas.services.RegisteredServiceImpl">
+					<property name="id" value="1" />
+					<property name="name" value="Test Default Service" />
+					<property name="serviceId" value="testDefault" />
+					<property name="evaluationOrder" value="2" />
+					<property name="usernameAttribute" value="(default)" />
+				</bean>
+
+				<bean class="org.jasig.cas.services.RegisteredServiceImpl">
+					<property name="id" value="2" />
+					<property name="name" value="EduPerson Test Service" />
+					<property name="serviceId" value="eduPersonTest" />
+					<property name="evaluationOrder" value="3" />
+					<property name="usernameAttribute" value="eduPersonAffiliation" />
+					<property name="ignoreAttributes" value="true" />
+				</bean>
+
+				<bean class="org.jasig.cas.services.RegisteredServiceImpl">
+					<property name="id" value="3" />
+					<property name="name" value="EduPerson Test Invalid Service" />
+					<property name="serviceId" value="eduPersonTestInvalid" />
+					<property name="evaluationOrder" value="4" />
+					<property name="usernameAttribute" value="eduPersonAffiliation" />
+					<property name="allowedAttributes">
+						<list>
+							<value>groupMembership</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="persistentIdGenerator"
+		class="org.jasig.cas.authentication.principal.ShibbolethCompatiblePersistentIdGenerator"
+		p:salt="casrocks" />
+
+	<bean id="neverExpiresExpirationPolicy"
+		class="org.jasig.cas.ticket.support.NeverExpiresExpirationPolicy" />
+
+	<bean id="ticketRegistry" class="org.jasig.cas.ticket.registry.DefaultTicketRegistry" />
+
+	<bean id="uniqueTicketIdGenerator" class="org.jasig.cas.util.DefaultUniqueTicketIdGenerator" />
+
+
+	<bean id="authenticationManager" class="org.jasig.cas.authentication.AuthenticationManagerImpl">
+		<!-- | This is the List of CredentialToPrincipalResolvers that identify 
+			what Principal is trying to authenticate. | The AuthenticationManagerImpl 
+			considers them in order, finding a CredentialToPrincipalResolver which | 
+			supports the presented credentials. | | AuthenticationManagerImpl uses these 
+			resolvers for two purposes. First, it uses them to identify the Principal 
+			| attempting to authenticate to CAS /login . In the default configuration, 
+			it is the DefaultCredentialsToPrincipalResolver | that fills this role. If 
+			you are using some other kind of credentials than UsernamePasswordCredentials, 
+			you will need to replace | DefaultCredentialsToPrincipalResolver with a CredentialsToPrincipalResolver 
+			that supports the credentials you are | using. | | Second, AuthenticationManagerImpl 
+			uses these resolvers to identify a service requesting a proxy granting ticket. 
+			| In the default configuration, it is the HttpBasedServiceCredentialsToPrincipalResolver 
+			that serves this purpose. | You will need to change this list if you are 
+			identifying services by something more or other than their callback URL. 
+			+ -->
+		<property name="credentialsToPrincipalResolvers">
+			<list>
+				<!-- | UsernamePasswordCredentialsToPrincipalResolver supports the UsernamePasswordCredentials 
+					that we use for /login | by default and produces SimplePrincipal instances 
+					conveying the username from the credentials. | | If you've changed your LoginFormAction 
+					to use credentials other than UsernamePasswordCredentials then you will also 
+					| need to change this bean declaration (or add additional declarations) to 
+					declare a CredentialsToPrincipalResolver that supports the | Credentials 
+					you are using. + -->
+				<bean
+					class="pl.linuxpolska.cas.support.yubikey.authentication.principal.YubiKeyCredentialsToPrincipalResolver" />
+
+
+
+				<bean
+					class="org.jasig.cas.authentication.principal.UsernamePasswordCredentialsToPrincipalResolver" />
+
+
+			</list>
+		</property>
+
+		<!-- | Whereas CredentialsToPrincipalResolvers identify who it is some 
+			Credentials might authenticate, | AuthenticationHandlers actually authenticate 
+			credentials. Here we declare the AuthenticationHandlers that | authenticate 
+			the Principals that the CredentialsToPrincipalResolvers identified. CAS will 
+			try these handlers in turn | until it finds one that both supports the Credentials 
+			presented and succeeds in authenticating. + -->
+		<property name="authenticationHandlers">
+			<list>
+				<!-- | This is the authentication handler declaration that every CAS 
+					deployer will need to change before deploying CAS | into production. The 
+					default SimpleTestUsernamePasswordAuthenticationHandler authenticates UsernamePasswordCredentials 
+					| where the username equals the password. You will need to replace this with 
+					an AuthenticationHandler that implements your | local authentication strategy. 
+					You might accomplish this by coding a new such handler and declaring | edu.someschool.its.cas.MySpecialHandler 
+					here, or you might use one of the handlers provided in the adaptors modules. 
+					+ -->
+				<bean
+					class="pl.linuxpolska.cas.support.yubikey.authentication.handler.YubiKeyAuthenticationHandler">
+					<property name="repositor">
+						<bean
+							class="pl.linuxpolska.cas.support.yubikey.client.impl.WsapiYubiKeyAuthRepository">
+							<property name="wsapiUrls">
+								<list>
+									<value>https://api.yubico.com/wsapi/2.0/verify</value>
+									<value>https://api2.yubico.com/wsapi/2.0/verify</value>
+									<value>https://api3.yubico.com/wsapi/2.0/verify</value>
+									<value>https://api4.yubico.com/wsapi/2.0/verify</value>
+									<value>https://api5.yubico.com/wsapi/2.0/verify</value>
+								</list>
+							</property>
+							<property name="clientId">
+								<value>1851</value>
+							</property>
+							<property name="key">
+								<value>oBVbNt7IZehZGR99rvq8d6RZ1DM=</value>
+							</property>
+							<property name="timeout">
+								<value>5</value>
+							</property>
+							<property name="sl">
+								<value>50</value>
+							</property>
+						</bean>
+					</property>
+				</bean>
+
+
+				<bean
+					class="org.jasig.cas.authentication.handler.support.SimpleTestUsernamePasswordAuthenticationHandler" />
+
+			</list>
+		</property>
+	</bean>
+
+</beans>
