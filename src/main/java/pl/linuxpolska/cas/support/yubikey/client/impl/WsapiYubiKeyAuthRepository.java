@@ -194,7 +194,6 @@ public class WsapiYubiKeyAuthRepository implements IYubiKeyAuthRepository {
     return respons;
   }
 
-  
   /**
    * 
    * @param urls
@@ -220,14 +219,6 @@ public class WsapiYubiKeyAuthRepository implements IYubiKeyAuthRepository {
           tasksDone++;
           tasks.remove(futureResponse);
           response = futureResponse.get();
-          /**
-           * If the response returned is REPLAYED_REQUEST keep looking at
-           * responses and hope we get something else. REPLAYED_REQUEST will be
-           * returned if a validation server got sync before it parsed our query
-           * (otp and nonce is the same).
-           * 
-           * @see http://forum.yubico.com/viewtopic.php?f=3&t=701
-           */
           if (!response.getStatus().equals(YubiKeyStatus.REPLAYED_REQUEST)) {
             break;
           }
@@ -262,18 +253,34 @@ public class WsapiYubiKeyAuthRepository implements IYubiKeyAuthRepository {
     return response;
   }
 
+  /**
+   * 
+   * @return
+   */
   public int getSl() {
     return sl;
   }
 
+  /**
+   * 
+   * @param sl
+   */
   public void setSl(int sl) {
     this.sl = sl;
   }
 
+  /**
+   * 
+   * @return
+   */
   public int getTimeout() {
     return timeout;
   }
 
+  /**
+   * 
+   * @param timeout
+   */
   public void setTimeout(int timeout) {
     this.timeout = timeout;
   }
@@ -309,15 +316,13 @@ public class WsapiYubiKeyAuthRepository implements IYubiKeyAuthRepository {
       URL url = new URL(this.url);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-      conn.setRequestProperty("User-Agent", "yubico-java-client/2.1");
-
       conn.setConnectTimeout(15000); // 15 second timeout
       conn.setReadTimeout(15000); // for both read and connect
-      SimpleYubiKeyResponse resp = new SimpleYubiKeyResponse();
 
       InputStream inStream = conn.getInputStream();
       BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
 
+      SimpleYubiKeyResponse resp = new SimpleYubiKeyResponse();
       String inputLine;
       while ((inputLine = in.readLine()) != null) {
         int ix = inputLine.indexOf("=");

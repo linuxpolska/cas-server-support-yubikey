@@ -4,11 +4,29 @@
 	<groupId>pl.linuxpolska.cas</groupId>
 	<artifactId>cas-server-support-yubikey</artifactId>
 	<name>CAS YubiKey Support</name>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<organization>
+		<name>LinuxPolska sp. z o.o.</name>
+		<url>http://linuxpolska.pl/</url>
+	</organization>
 
 	<properties>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+	<developers>
+		<developer>
+			<id>cybermaniax</id>
+			<name>Grzegorz Hałajko</name>
+			<email>ghalajko@gmail.com</email>
+			<roles>
+				<role>programmer</role>
+				<role>architect</role>
+			</roles>
+		</developer>
+	</developers>
 
 	<build>
 		<plugins>
@@ -45,7 +63,7 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
+				<groupId>maven</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
@@ -84,7 +102,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
-			<scope>test</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -95,9 +113,5 @@
 		</dependency>
 	</dependencies>
 
-	<version>0.0.1-SNAPSHOT</version>
-	<organization>
-		<name>LinuxPolska sp. z o.o.</name>
-		<url>http://linuxpolska.pl/</url>
-	</organization>
+
 </project>

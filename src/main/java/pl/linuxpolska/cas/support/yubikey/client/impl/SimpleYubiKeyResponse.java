@@ -57,10 +57,12 @@ public class SimpleYubiKeyResponse implements IYubiKeyResponse {
    * timestamp
    */
   private String timestamp;
+
   @Override
   public String getH() {
     return h;
   }
+
   /**
    * 
    */
@@ -191,7 +193,9 @@ public class SimpleYubiKeyResponse implements IYubiKeyResponse {
     timestamp = val;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
